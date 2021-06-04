@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Visite des monuments</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <link rel="stylesheet" href="/css/normalize.min.css">
+    <!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-1.0.0-b1/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-1.0.0-b1/leaflet.js"></script>-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="/css/leaflet.photon.css" />
+    <link rel="stylesheet" href="/css/FindAndGo.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <script src="/jquery-3.6.0.js"></script>
+
+
+
+    
+    <!-- Photon search : https://github.com/komoot/leaflet.photon -->
+    <script type="text/javascript" src="/js/leaflet.photon.js"></script>
+    <script type="text/javascript" src="/js/GHUtil.js"></script>
+    <script type="text/javascript" src="/js/FindAndGo.js"></script>
+
+    <link rel="icon" type="image/png" href="/img/53638.png"/>
+</head>
+
+<body>
+    <div>
+        <div class="descriptif" id="entete">
+            <h2 > Visites Des Monuments </h2>
+
+
+        </div>
+
+        <div id="map"></div>
+        <div id="FindAndGo">
+            
+
+
+
+        </div>
+
+
+
+    </div>
+
+    <% if (etudiant) { %>
+        <script>
+           var etudiant = <%- JSON.stringify(etudiant) %> ;
+        </script>
+     <% }; %>
+
+    
+
+
+    <script>
+        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+        var hyddaLayer = L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
+            attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+
+        var map = L.map("map", {
+            layers: [osmLayer],
+            //center: [47.215, -1.555],
+            center: [28, -9],
+            zoom: 5
+        });
+        L.control.scale({ imperial: false }).addTo(map);
+
+
+
+
+        var layerControl = L.control.layers({
+            "OpenStreetMap": osmLayer,
+            "Hydda": hyddaLayer
+        });
+        layerControl.addTo(map);
+        var greenIcon = L.icon({
+            iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Map_pin_icon.svg/752px-Map_pin_icon.svg.png',
+            shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png',
+
+            iconSize: [38, 95], // size of the icon
+            shadowSize: [50, 64], // size of the shadow
+            iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
+            shadowAnchor: [4, 62],  // the same for the shadow
+            popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+        });
+        const marker = new Array();
+        const circle = new Array();
+        var i=0;
+        etudiant.forEach(function(e){
+        marker[i] =L.marker([e.latitude, e.longitude], {icon: greenIcon}).addTo(map);
+
+        var nom = e.nom;
+        var id = e.id;
+        var lat = e.latitude;
+        var long = e.longitude;
+
+        var popupContent = e.nom+ '<br><input id="btn" type="button" value="Visiter" /> ';
+        
+
+        marker[i].bindPopup(popupContent).openPopup();
+        
+    
+        marker[i].on('click', function(e) {
+      
+            var visiter = L.DomUtil.get("btn");
+            L.DomEvent.on(visiter, "click", function() {
+                var output = L.DomUtil.get("FaG-visite");
+                output.innerHTML = '<from action="/visite" method="post"> id:<input type="text" name="idd" value="'+id+'"><br>nom:<input type="text" name="name" value="'+nom+'"><br>longitude:<input type="text" name="long" value="'+long+'"><br>latitude:<input type="text" name="latt" value="'+lat+'"><br><input id="a" type="submit" value="Submit"></from><br>';
+
+                });
+            
+
+           
+          console.log(e.nom);
+            });
+
+
+        circle[i]=L.circle([e.latitude, e.longitude], {radius: 1000}).addTo(map);
+        var popupContent2 = "";
+        circle[i].bindPopup(popupContent2).openPopup();
+        i=i+1;
+        });
+        new FindAndGo("FindAndGo", map, {
+            layerControl: layerControl,
+            graphhopperApiKey: "717128f9-8ffb-43b9-8e4b-9c703eb94076"
+
+
+
+        });
+
+        
+
+        
+        
+        
+        
+    </script>
+
+</body>
+
+</html>
